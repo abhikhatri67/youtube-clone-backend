@@ -11,15 +11,33 @@ cloudinary.config({
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
-    // upload file on cloudinary.
-    const response = await cloudinary.uploader(localFilePath, {
-      resourceType: "auto",
+    console.log("localFilePath from utils: ", localFilePath);
+
+    // Upload file on Cloudinary
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
     });
-    // file has been uploaded successfully.
-    console.log("File is uploaded on cloudinary", response.url);
+    console.log("response: ", response);
+
+    // File has been uploaded successfully
+    console.log("File is uploaded on Cloudinary", response.url);
+
+    // Remove the locally saved file as the upload failed
+    fs.unlinkSync(localFilePath);
+
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath); // remove the locally saved file as the upload failed.
+    console.log("Error during upload:", error);
+
+    // Remove the locally saved file as the upload failed
+    try {
+      if (fs.existsSync(localFilePath)) {
+        fs.unlinkSync(localFilePath);
+      }
+    } catch (unlinkError) {
+      console.error("Failed to delete local file:", unlinkError);
+    }
+
     return null;
   }
 };
